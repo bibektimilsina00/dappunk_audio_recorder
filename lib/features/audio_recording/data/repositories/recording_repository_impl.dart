@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart' as record;
 import '../../../../core/error/failures.dart';
 import '../../../../core/error/audio_failures.dart';
 import '../../domain/entities/recording.dart';
@@ -26,9 +27,9 @@ class RecordingRepositoryImpl implements RecordingRepository {
   });
 
   @override
+  record.AudioRecorder get recorder => recordingDataSource.recorder;
   Future<Either<Failure, void>> startRecording() async {
     try {
-      // Request permission
       var status = await Permission.microphone.status;
       if (status.isDenied) {
         status = await Permission.microphone.request();
@@ -47,15 +48,12 @@ class RecordingRepositoryImpl implements RecordingRepository {
         return Left(PermissionFailure('Microphone permission denied'));
       }
 
-      // Get app directory
       final directory = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final path = '${directory.path}/recording_$timestamp.m4a';
 
-      // Start recording
       await recordingDataSource.startRecording(path);
 
-      // Start duration timer
       _recordingStartTime = DateTime.now();
       _durationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if (_recordingStartTime != null) {
@@ -73,23 +71,22 @@ class RecordingRepositoryImpl implements RecordingRepository {
   @override
   Future<Either<Failure, String>> stopRecording() async {
     try {
-      // Stop timer
       _durationTimer?.cancel();
       final duration = _recordingStartTime != null
           ? DateTime.now().difference(_recordingStartTime!)
           : Duration.zero;
       _recordingStartTime = null;
 
-      // Stop recording
       final path = await recordingDataSource.stopRecording();
       if (path == null) {
         return Left(RecordingFailure('Failed to stop recording'));
       }
 
-      // Save metadata
+      final id = DateTime.now().millisecondsSinceEpoch.toString();
       final recording = RecordingModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: id,
         path: path,
+        name: 'Recording $id',
         timestamp: DateTime.now(),
         duration: duration,
       );
@@ -144,19 +141,29 @@ class RecordingRepositoryImpl implements RecordingRepository {
   @override
   Future<Either<Failure, void>> deleteRecording(String id) async {
     try {
-      // Get recording to delete file
       final recordings = await localDataSource.getRecordings();
       final recording = recordings.firstWhere((r) => r.id == id);
 
-      // Delete file
       final file = File(recording.path);
       if (await file.exists()) {
         await file.delete();
       }
 
-      // Delete metadata
       await localDataSource.deleteRecording(id);
 
+      return const Right(null);
+    } catch (e) {
+      return Left(StorageFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> renameRecording(
+    String id,
+    String newName,
+  ) async {
+    try {
+      await localDataSource.renameRecording(id, newName);
       return const Right(null);
     } catch (e) {
       return Left(StorageFailure(e.toString()));

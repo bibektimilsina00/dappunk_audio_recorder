@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/app_routes/app_routes.dart';
 import '../../domain/entities/recording.dart';
 import '../bloc/recording_bloc.dart';
 import '../bloc/recording_event.dart';
@@ -8,6 +10,8 @@ import '../bloc/recording_state.dart';
 
 class RecordingsList extends StatelessWidget {
   const RecordingsList({super.key});
+
+ 
 
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -72,7 +76,7 @@ class RecordingsList extends StatelessWidget {
           itemCount: recordings.length,
           itemBuilder: (context, index) {
             final recording =
-                recordings[recordings.length - 1 - index]; // Reverse order
+                recordings[recordings.length - 1 - index];
             final isCurrentlyPlaying = currentPlayingPath == recording.path;
 
             return Dismissible(
@@ -150,7 +154,9 @@ class RecordingsList extends StatelessWidget {
                     ),
                   ),
                   title: Text(
-                    'Recording ${recordings.length - index}',
+                    recording.name.isNotEmpty
+                        ? recording.name
+                        : 'Recording ${recordings.length - index}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
@@ -177,6 +183,11 @@ class RecordingsList extends StatelessWidget {
                       ),
                     ],
                   ),
+                  onTap: () {
+                    context.push(AppRoutes.recordingDetailPage, extra: recording);
+                    
+                    
+                  },
                   trailing: IconButton(
                     onPressed: () {
                       if (isCurrentlyPlaying && isPlaying) {

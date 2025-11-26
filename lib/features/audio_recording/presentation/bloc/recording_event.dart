@@ -36,6 +36,16 @@ class DeleteRecordingEvent extends RecordingEvent {
   List<Object?> get props => [id];
 }
 
+class RenameRecordingEvent extends RecordingEvent {
+  final String id;
+  final String newName;
+
+  const RenameRecordingEvent(this.id, this.newName);
+
+  @override
+  List<Object?> get props => [id, newName];
+}
+
 class PlayRecordingEvent extends RecordingEvent {
   final String path;
 
@@ -70,3 +80,31 @@ class UpdateRecordingDurationEvent extends RecordingEvent {
   @override
   List<Object?> get props => [duration];
 }
+
+class SetPlaybackVolumeEvent extends RecordingEvent {
+  final double volume;
+
+  const SetPlaybackVolumeEvent(this.volume);
+
+  @override
+  List<Object?> get props => [volume];
+}
+
+class ApplyFilterEvent extends RecordingEvent {
+  final String id;
+  final String path;
+  final String outputPath;
+  final String filterName;
+
+  const ApplyFilterEvent({
+    required this.id,
+    required this.path,
+    required this.outputPath,
+    required this.filterName,
+  });
+
+  @override
+  List<Object?> get props => [id, path, outputPath, filterName];
+}
+
+ 

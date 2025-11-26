@@ -5,16 +5,21 @@ import '../../domain/usecases/start_recording.dart';
 import '../../domain/usecases/stop_recording.dart';
 import '../../domain/usecases/get_recordings.dart';
 import '../../domain/usecases/play_recording.dart';
+import '../../domain/usecases/rename_recording.dart';
 import '../../domain/repositories/recording_repository.dart';
 import '../../domain/entities/recording.dart';
 import 'recording_event.dart';
 import 'recording_state.dart';
+import 'package:dappunk/features/audio_filter/domain/usecases/apply_filter.dart';
+import 'package:dappunk/features/audio_filter/domain/entities/filter_type.dart';
 
 class RecordingBloc extends Bloc<RecordingEvent, RecordingState> {
   final StartRecording startRecording;
   final StopRecording stopRecording;
   final GetRecordings getRecordings;
   final PlayRecording playRecording;
+  final RenameRecording? renameRecording;
+  final ApplyFilter? applyFilter;
   final RecordingRepository repository;
 
   StreamSubscription? _durationSubscription;
@@ -24,6 +29,8 @@ class RecordingBloc extends Bloc<RecordingEvent, RecordingState> {
     required this.stopRecording,
     required this.getRecordings,
     required this.playRecording,
+    this.renameRecording,
+    this.applyFilter,
     required this.repository,
   }) : super(const RecordingInitial()) {
     on<StartRecordingEvent>(_onStartRecording);
@@ -32,10 +39,14 @@ class RecordingBloc extends Bloc<RecordingEvent, RecordingState> {
     on<ResumeRecordingEvent>(_onResumeRecording);
     on<LoadRecordingsEvent>(_onLoadRecordings);
     on<DeleteRecordingEvent>(_onDeleteRecording);
+    on<RenameRecordingEvent>(_onRenameRecording);
+    on<ApplyFilterEvent>(_onApplyFilter);
+
     on<PlayRecordingEvent>(_onPlayRecording);
     on<PausePlaybackEvent>(_onPausePlayback);
     on<StopPlaybackEvent>(_onStopPlayback);
     on<SeekPlaybackEvent>(_onSeekPlayback);
+    on<SetPlaybackVolumeEvent>(_onSetPlaybackVolume);
     on<UpdateRecordingDurationEvent>(_onUpdateRecordingDuration);
   }
 
@@ -156,6 +167,62 @@ class RecordingBloc extends Bloc<RecordingEvent, RecordingState> {
     });
   }
 
+  Future<void> _onRenameRecording(
+    RenameRecordingEvent event,
+    Emitter<RecordingState> emit,
+  ) async {
+    if (renameRecording == null) return;
+    final result = await renameRecording!(
+      RenameRecordingParams(id: event.id, newName: event.newName),
+    );
+
+    result.fold(
+      (failure) => emit(RecordingError(failure.toString())),
+      (_) => add(const LoadRecordingsEvent()),
+    );
+  }
+
+  Future<void> _onApplyFilter(
+    ApplyFilterEvent event,
+    Emitter<RecordingState> emit,
+  ) async {
+    if (applyFilter == null) return;
+
+    // Map filterName to FilterType
+    FilterType? ftype;
+    switch (event.filterName.toLowerCase()) {
+      case 'chipmunk':
+        ftype = FilterType.chipmunk;
+        break;
+      case 'deep':
+      case 'deep voice':
+        ftype = FilterType.deep;
+        break;
+      case 'telephone':
+        ftype = FilterType.telephone;
+        break;
+      case 'underwater':
+        ftype = FilterType.underwater;
+        break;
+      default:
+        ftype = FilterType.chipmunk;
+    }
+
+    final result = await applyFilter!(
+      ApplyFilterParams(
+        inputPath: event.path,
+        outputPath: event.outputPath,
+        type: ftype,
+      ),
+    );
+
+    result.fold((failure) => emit(RecordingError(failure.toString())), (
+      filteredPath,
+    ) async {
+      add(PlayRecordingEvent(filteredPath));
+    });
+  }
+
   Future<void> _onPlayRecording(
     PlayRecordingEvent event,
     Emitter<RecordingState> emit,
@@ -208,6 +275,13 @@ class RecordingBloc extends Bloc<RecordingEvent, RecordingState> {
     Emitter<RecordingState> emit,
   ) async {
     await repository.seekTo(event.position);
+  }
+
+  Future<void> _onSetPlaybackVolume(
+    SetPlaybackVolumeEvent event,
+    Emitter<RecordingState> emit,
+  ) async {
+    await repository.setVolume(event.volume);
   }
 
   void _onUpdateRecordingDuration(

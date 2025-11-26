@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:record/record.dart' as record;
+import 'package:waveform_flutter/waveform_flutter.dart';
+import 'package:dappunk/injection_container.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/recording_bloc.dart';
 import '../bloc/recording_event.dart';
 import '../bloc/recording_state.dart';
 
-class RecordingControls extends StatelessWidget {
+class RecordingControls extends StatefulWidget {
   const RecordingControls({super.key});
+
+  @override
+  State<RecordingControls> createState() => _RecordingControlsState();
+}
+
+class _RecordingControlsState extends State<RecordingControls> {
+  late final record.AudioRecorder _recorder;
 
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -15,6 +25,17 @@ class RecordingControls extends StatelessWidget {
     return duration.inHours > 0
         ? '$hours:$minutes:$seconds'
         : '$minutes:$seconds';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _recorder = di<record.AudioRecorder>();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -36,7 +57,6 @@ class RecordingControls extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Duration Display
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -62,26 +82,33 @@ class RecordingControls extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // Waveform Indicator (Placeholder)
                 if (isRecording && !isPaused)
                   Container(
-                    height: 60,
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: List.generate(
-                        20,
-                        (index) => AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          width: 4,
-                          height: 10 + (index % 5) * 10.0,
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade400,
-                            borderRadius: BorderRadius.circular(2),
+                    margin: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: 80,
+                          width: MediaQuery.of(context).size.width - 48,
+                          child: AnimatedWaveList(
+                            stream: _recorder
+                                .onAmplitudeChanged(
+                                  const Duration(milliseconds: 100),
+                                )
+                                .map(
+                                  (a) =>
+                                      Amplitude(current: a.current, max: a.max),
+                                ),
+                            barBuilder: (animation, amplitude) => WaveFormBar(
+                              animation: animation,
+                              amplitude: amplitude,
+                              color: Colors.red,
+                              maxHeight: 40,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
 
@@ -116,7 +143,6 @@ class RecordingControls extends StatelessWidget {
                       const SizedBox(width: 16),
                     ],
 
-                    // Main Record/Stop Button
                     ElevatedButton(
                       onPressed: () {
                         if (isRecording) {
@@ -148,7 +174,6 @@ class RecordingControls extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // Status Text
                 Text(
                   isRecording
                       ? (isPaused ? 'Recording Paused' : 'Recording...')

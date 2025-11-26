@@ -1,8 +1,6 @@
 PODS:
   - audio_session (0.0.1):
     - Flutter
-  - audio_waveforms (0.0.1):
-    - Flutter
   - ffmpeg_kit_flutter_new (1.0.0):
     - ffmpeg_kit_flutter_new/full-gpl (= 1.0.0)
     - Flutter
@@ -17,7 +15,7 @@ PODS:
     - FlutterMacOS
   - permission_handler_apple (9.3.0):
     - Flutter
-  - record_darwin (1.0.0):
+  - record_ios (1.1.0):
     - Flutter
   - shared_preferences_foundation (0.0.1):
     - Flutter
@@ -25,20 +23,17 @@ PODS:
 
 DEPENDENCIES:
   - audio_session (from `.symlinks/plugins/audio_session/ios`)
-  - audio_waveforms (from `.symlinks/plugins/audio_waveforms/ios`)
   - ffmpeg_kit_flutter_new (from `.symlinks/plugins/ffmpeg_kit_flutter_new/ios`)
   - Flutter (from `Flutter`)
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
-  - record_darwin (from `.symlinks/plugins/record_darwin/ios`)
+  - record_ios (from `.symlinks/plugins/record_ios/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
 
 EXTERNAL SOURCES:
   audio_session:
     :path: ".symlinks/plugins/audio_session/ios"
-  audio_waveforms:
-    :path: ".symlinks/plugins/audio_waveforms/ios"
   ffmpeg_kit_flutter_new:
     :path: ".symlinks/plugins/ffmpeg_kit_flutter_new/ios"
   Flutter:
@@ -49,20 +44,19 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
-  record_darwin:
-    :path: ".symlinks/plugins/record_darwin/ios"
+  record_ios:
+    :path: ".symlinks/plugins/record_ios/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
 
 SPEC CHECKSUMS:
   audio_session: 9bb7f6c970f21241b19f5a3658097ae459681ba0
-  audio_waveforms: a6dde7fe7c0ea05f06ffbdb0f7c1b2b2ba6cedcf
   ffmpeg_kit_flutter_new: 12426a19f10ac81186c67c6ebc4717f8f4364b7f
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
   path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
-  record_darwin: fb1f375f1d9603714f55b8708a903bbb91ffdb0a
+  record_ios: f75fa1d57f840012775c0e93a38a7f3ceea1a374
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
 
 PODFILE CHECKSUM: 6d0df46254a5f56a315fb87ee1b58032b8bbe845

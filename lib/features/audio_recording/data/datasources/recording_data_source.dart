@@ -1,4 +1,4 @@
-import 'package:record/record.dart';
+import 'package:record/record.dart' as record;
 import 'package:just_audio/just_audio.dart';
 
 /// Data source for audio recording and playback operations
@@ -10,6 +10,7 @@ abstract class RecordingDataSource {
   Future<void> resumeRecording();
   Future<bool> isRecording();
   Future<bool> isPaused();
+  record.AudioRecorder get recorder;
 
   // Playback operations
   Future<void> playAudio(String path);
@@ -24,23 +25,33 @@ abstract class RecordingDataSource {
 }
 
 class RecordingDataSourceImpl implements RecordingDataSource {
-  final AudioRecorder recorder;
+  final record.AudioRecorder _recorder;
   final AudioPlayer player;
 
-  RecordingDataSourceImpl({required this.recorder, required this.player});
+  RecordingDataSourceImpl({
+    required record.AudioRecorder recorder,
+    required this.player,
+  }) : _recorder = recorder;
 
-  // Recording operations
   @override
   Future<void> startRecording(String path) async {
-    if (await recorder.hasPermission()) {
-      await recorder.start(
-        const RecordConfig(
-          encoder: AudioEncoder.aacLc,
-          bitRate: 128000,
-          sampleRate: 44100,
-        ),
-        path: path,
-      );
+    final hasPermission = await _recorder.hasPermission();
+    if (hasPermission) {
+      try {
+        await _recorder.start(
+          const record.RecordConfig(
+            encoder: record.AudioEncoder.aacLc,
+            bitRate: 128000,
+            sampleRate: 44100,
+          ),
+          path: path,
+        );
+
+        print('Recording started: $path');
+      } catch (e) {
+        print('Failed to start recording: $e');
+        rethrow;
+      }
     } else {
       throw Exception('Microphone permission not granted');
     }
@@ -48,28 +59,34 @@ class RecordingDataSourceImpl implements RecordingDataSource {
 
   @override
   Future<String?> stopRecording() async {
-    return await recorder.stop();
+    final result = await _recorder.stop();
+
+    print('Recording stopped: $result');
+    return result;
   }
 
   @override
   Future<void> pauseRecording() async {
-    await recorder.pause();
+    await _recorder.pause();
   }
 
   @override
   Future<void> resumeRecording() async {
-    await recorder.resume();
+    await _recorder.resume();
   }
 
   @override
   Future<bool> isRecording() async {
-    return await recorder.isRecording();
+    return await _recorder.isRecording();
   }
 
   @override
   Future<bool> isPaused() async {
-    return await recorder.isPaused();
+    return await _recorder.isPaused();
   }
+
+  // Provide access to the recorder for the UI to display waveforms
+  record.AudioRecorder get recorder => _recorder;
 
   // Playback operations
   @override
@@ -106,7 +123,7 @@ class RecordingDataSourceImpl implements RecordingDataSource {
 
   @override
   Future<void> dispose() async {
-    await recorder.dispose();
+    _recorder.dispose();
     await player.dispose();
   }
 }

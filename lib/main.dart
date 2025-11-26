@@ -1,10 +1,11 @@
+import 'package:dappunk/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+import 'core/app_routes/app_routes.dart';
 import 'injection_container.dart' as di;
 import 'features/audio_recording/presentation/bloc/recording_bloc.dart';
 import 'features/audio_recording/presentation/bloc/recording_event.dart';
-import 'features/audio_recording/presentation/pages/recording_page.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,31 +18,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'DapPunk - Voice Recorder',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.light,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) =>
+              di.di<RecordingBloc>()..add(const LoadRecordingsEvent()),
         ),
-        useMaterial3: true,
+      ],
+      child: MaterialApp.router(
+        title: 'DappPunk',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        routerConfig: router,
       ),
-      routerConfig: _router,
     );
   }
 }
 
-final _router = GoRouter(
-  initialLocation: '/',
-  routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => BlocProvider(
-        create: (context) =>
-            di.di<RecordingBloc>()..add(const LoadRecordingsEvent()),
-        child: const RecordingPage(),
-      ),
-    ),
-  ],
-);
+
+

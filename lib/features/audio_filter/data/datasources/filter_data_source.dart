@@ -1,7 +1,6 @@
 import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new/return_code.dart';
 
-/// Data source for FFmpeg audio filter operations
 abstract class FilterDataSource {
   Future<String> applyFilter({
     required String inputPath,
@@ -19,7 +18,6 @@ class FilterDataSourceImpl implements FilterDataSource {
     required String outputPath,
     required String filterCommand,
   }) async {
-    // -y overwrites output file without asking
     final command = '-y -i "$inputPath" -af "$filterCommand" "$outputPath"';
     final session = await FFmpegKit.execute(command);
     final returnCode = await session.getReturnCode();

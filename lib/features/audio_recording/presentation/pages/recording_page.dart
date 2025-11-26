@@ -14,13 +14,10 @@ class RecordingPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'DapPunk Recorder',
+          'DappPunk Recorder',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
       ),
       body: BlocConsumer<RecordingBloc, RecordingState>(
         listener: (context, state) {
@@ -40,23 +37,20 @@ class RecordingPage extends StatelessWidget {
                 behavior: SnackBarBehavior.floating,
               ),
             );
-            // Load recordings after completing
-            // context.read<RecordingBloc>().add(const LoadRecordingsEvent());
+
+            context.read<RecordingBloc>().add(const LoadRecordingsEvent());
           }
         },
         builder: (context, state) {
           return Column(
             children: [
-              // Recording Controls
               const RecordingControls(),
 
-              // Divider
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Divider(color: Colors.grey.shade300),
               ),
 
-              // Recordings List Header
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -84,7 +78,6 @@ class RecordingPage extends StatelessWidget {
                 ),
               ),
 
-              // Recordings List
               const Expanded(child: RecordingsList()),
             ],
           );

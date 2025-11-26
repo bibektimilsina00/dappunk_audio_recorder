@@ -1,13 +1,13 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../entities/filtered_audio.dart';
+import '../entities/filter_type.dart';
 
 abstract class FilterRepository {
+  /// Applies a FFmpeg filter of [type] to [inputPath] and writes the output file to [outputPath].
+  /// Returns the path of the filtered output file.
   Future<Either<Failure, String>> applyFilter({
     required String inputPath,
-    required String filterType,
+    required String outputPath,
+    required FilterType type,
   });
-
-  Future<Either<Failure, List<FilteredAudio>>> getFilteredAudios();
-  Future<Either<Failure, void>> deleteFilteredAudio(String id);
 }

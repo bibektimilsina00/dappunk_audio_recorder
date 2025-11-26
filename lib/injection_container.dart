@@ -1,5 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:record/record.dart';
+import 'package:record/record.dart' as record;
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,10 +12,14 @@ import 'features/audio_recording/domain/usecases/start_recording.dart';
 import 'features/audio_recording/domain/usecases/stop_recording.dart';
 import 'features/audio_recording/domain/usecases/get_recordings.dart';
 import 'features/audio_recording/domain/usecases/play_recording.dart';
+import 'features/audio_recording/domain/usecases/rename_recording.dart';
 import 'features/audio_recording/presentation/bloc/recording_bloc.dart';
 
 // Audio Filter Feature
 import 'features/audio_filter/data/datasources/filter_data_source.dart';
+import 'features/audio_filter/data/repositories/filter_repository_impl.dart';
+import 'features/audio_filter/domain/repositories/filter_repository.dart';
+import 'features/audio_filter/domain/usecases/apply_filter.dart';
 
 final di = GetIt.instance;
 
@@ -29,6 +33,8 @@ Future<void> init() async {
       stopRecording: di(),
       getRecordings: di(),
       playRecording: di(),
+      renameRecording: di(),
+      applyFilter: di(),
       repository: di(),
     ),
   );
@@ -38,6 +44,7 @@ Future<void> init() async {
   di.registerLazySingleton(() => StopRecording(di()));
   di.registerLazySingleton(() => GetRecordings(di()));
   di.registerLazySingleton(() => PlayRecording(di()));
+  di.registerLazySingleton(() => RenameRecording(di()));
 
   // Repository
   di.registerLazySingleton<RecordingRepository>(
@@ -60,6 +67,12 @@ Future<void> init() async {
 
   // Data sources
   di.registerLazySingleton<FilterDataSource>(() => FilterDataSourceImpl());
+  // Repository
+  di.registerLazySingleton<FilterRepository>(
+    () => FilterRepositoryImpl(dataSource: di()),
+  );
+  // Use cases
+  di.registerLazySingleton(() => ApplyFilter(di()));
 
   //! Core
   // External dependencies
@@ -67,6 +80,7 @@ Future<void> init() async {
   di.registerLazySingleton(() => sharedPreferences);
 
   //! External
-  di.registerLazySingleton(() => AudioRecorder());
+
+  di.registerLazySingleton(() => record.AudioRecorder());
   di.registerLazySingleton(() => AudioPlayer());
 }

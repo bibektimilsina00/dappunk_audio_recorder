@@ -1,4 +1,5 @@
 import 'dart:convert';
+// dart:io removed - not needed here
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/recording_model.dart';
 
@@ -6,6 +7,7 @@ abstract class LocalDataSource {
   Future<void> saveRecording(RecordingModel recording);
   Future<List<RecordingModel>> getRecordings();
   Future<void> deleteRecording(String id);
+  Future<void> renameRecording(String id, String newName);
   Future<void> clearAll();
 }
 
@@ -37,6 +39,28 @@ class LocalDataSourceImpl implements LocalDataSource {
   Future<void> deleteRecording(String id) async {
     final recordings = await getRecordings();
     recordings.removeWhere((r) => r.id == id);
+
+    final jsonList = recordings.map((r) => r.toJson()).toList();
+    await sharedPreferences.setString(_recordingsKey, json.encode(jsonList));
+  }
+
+  @override
+  Future<void> renameRecording(String id, String newName) async {
+    final recordings = await getRecordings();
+    for (var r in recordings) {
+      if (r.id == id) {
+        final updated = RecordingModel(
+          id: r.id,
+          path: r.path,
+          name: newName,
+          timestamp: r.timestamp,
+          duration: r.duration,
+        );
+        final idx = recordings.indexOf(r);
+        recordings[idx] = updated;
+        break;
+      }
+    }
 
     final jsonList = recordings.map((r) => r.toJson()).toList();
     await sharedPreferences.setString(_recordingsKey, json.encode(jsonList));
