@@ -14,9 +14,10 @@ dependencies:
   dartz: ^0.10.1
   get_it: ^9.1.0
   
-  ffmpeg_kit_flutter: ^6.0.3
+  # Audio Dependencies
   record: ^5.1.0
   just_audio: ^0.9.36
+  ffmpeg_kit_flutter_new: ^4.1.0
   path_provider: ^2.1.2
   permission_handler: ^11.3.0
   audio_waveforms: ^1.0.5
@@ -31,3 +32,6 @@ dev_dependencies:
 flutter:
 
   uses-material-design: true
+
+dependency_overrides:
+  record_linux: ^1.0.0

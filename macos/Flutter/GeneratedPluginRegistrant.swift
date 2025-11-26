@@ -6,7 +6,7 @@ import FlutterMacOS
 import Foundation
 
 import audio_session
-import ffmpeg_kit_flutter
+import ffmpeg_kit_flutter_new
 import just_audio
 import path_provider_foundation
 import record_darwin

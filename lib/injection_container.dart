@@ -8,42 +8,42 @@ import 'features/audio_recording/data/datasources/recording_data_source.dart';
 // Audio Filter Feature
 import 'features/audio_filter/data/datasources/filter_data_source.dart';
 
-final sl = GetIt.instance;
+final di = GetIt.instance;
 
 Future<void> init() async {
   //! Features - Audio Recording
 
   // Use cases
   // TODO: Register use cases when repositories are implemented
-  // sl.registerLazySingleton(() => StartRecording(sl()));
-  // sl.registerLazySingleton(() => StopRecording(sl()));
-  // sl.registerLazySingleton(() => GetRecordings(sl()));
-  // sl.registerLazySingleton(() => PlayRecording(sl()));
+  // di.registerLazySingleton(() => StartRecording(di()));
+  // di.registerLazySingleton(() => StopRecording(di()));
+  // di.registerLazySingleton(() => GetRecordings(di()));
+  // di.registerLazySingleton(() => PlayRecording(di()));
 
   // Repository
   // TODO: Register repository implementation
 
   // Data sources
-  sl.registerLazySingleton<RecordingDataSource>(
-    () => RecordingDataSourceImpl(recorder: sl(), player: sl()),
+  di.registerLazySingleton<RecordingDataSource>(
+    () => RecordingDataSourceImpl(recorder: di(), player: di()),
   );
 
   //! Features - Audio Filter
 
   // Use cases
   // TODO: Register use cases when repositories are implemented
-  // sl.registerLazySingleton(() => ApplyAudioFilter(sl()));
+  // di.registerLazySingleton(() => ApplyAudioFilter(di()));
 
   // Repository
   // TODO: Register repository implementation
 
   // Data sources
-  sl.registerLazySingleton<FilterDataSource>(() => FilterDataSourceImpl());
+  di.registerLazySingleton<FilterDataSource>(() => FilterDataSourceImpl());
 
   //! Core
   // TODO: Add core dependencies
 
   //! External
-  sl.registerLazySingleton(() => AudioRecorder());
-  sl.registerLazySingleton(() => AudioPlayer());
+  di.registerLazySingleton(() => AudioRecorder());
+  di.registerLazySingleton(() => AudioPlayer());
 }
