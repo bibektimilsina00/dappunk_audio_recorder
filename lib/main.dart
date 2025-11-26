@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'injection_container.dart' as di;
+import 'features/audio_recording/presentation/bloc/recording_bloc.dart';
+import 'features/audio_recording/presentation/bloc/recording_event.dart';
+import 'features/audio_recording/presentation/pages/recording_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,30 +17,31 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'DapPunk - Voice Recorder',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.light,
+        ),
         useMaterial3: true,
       ),
-      home: const Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.mic, size: 64, color: Colors.deepPurple),
-              SizedBox(height: 16),
-              Text(
-                'Clean Architecture Setup Complete',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              Text('3 Features: Recording, Filter, Playback'),
-            ],
-          ),
-        ),
-      ),
+      routerConfig: _router,
     );
   }
 }
+
+final _router = GoRouter(
+  initialLocation: '/',
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => BlocProvider(
+        create: (context) =>
+            di.di<RecordingBloc>()..add(const LoadRecordingsEvent()),
+        child: const RecordingPage(),
+      ),
+    ),
+  ],
+);

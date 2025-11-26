@@ -32,96 +32,81 @@ class RecordingDataSourceImpl implements RecordingDataSource {
   // Recording operations
   @override
   Future<void> startRecording(String path) async {
-    // TODO: Implement
-    throw UnimplementedError();
+    if (await recorder.hasPermission()) {
+      await recorder.start(
+        const RecordConfig(
+          encoder: AudioEncoder.aacLc,
+          bitRate: 128000,
+          sampleRate: 44100,
+        ),
+        path: path,
+      );
+    } else {
+      throw Exception('Microphone permission not granted');
+    }
   }
 
   @override
   Future<String?> stopRecording() async {
-    // TODO: Implement
-    throw UnimplementedError();
+    return await recorder.stop();
   }
 
   @override
   Future<void> pauseRecording() async {
-    // TODO: Implement
-    throw UnimplementedError();
+    await recorder.pause();
   }
 
   @override
   Future<void> resumeRecording() async {
-    // TODO: Implement
-    throw UnimplementedError();
+    await recorder.resume();
   }
 
   @override
   Future<bool> isRecording() async {
-    // TODO: Implement
-    throw UnimplementedError();
+    return await recorder.isRecording();
   }
 
   @override
   Future<bool> isPaused() async {
-    // TODO: Implement
-    throw UnimplementedError();
+    return await recorder.isPaused();
   }
 
   // Playback operations
   @override
   Future<void> playAudio(String path) async {
-    // TODO: Implement
-    // await player.setFilePath(path);
-    // await player.play();
-    throw UnimplementedError();
+    await player.setFilePath(path);
+    await player.play();
   }
 
   @override
   Future<void> pausePlayback() async {
-    // TODO: Implement
-    // await player.pause();
-    throw UnimplementedError();
+    await player.pause();
   }
 
   @override
   Future<void> stopPlayback() async {
-    // TODO: Implement
-    // await player.stop();
-    throw UnimplementedError();
+    await player.stop();
   }
 
   @override
   Future<void> seekTo(Duration position) async {
-    // TODO: Implement
-    // await player.seek(position);
-    throw UnimplementedError();
+    await player.seek(position);
   }
 
   @override
   Future<void> setVolume(double volume) async {
-    // TODO: Implement
-    // await player.setVolume(volume);
-    throw UnimplementedError();
+    await player.setVolume(volume.clamp(0.0, 1.0));
   }
 
   @override
-  Stream<Duration> get positionStream {
-    // TODO: Implement
-    // return player.positionStream;
-    throw UnimplementedError();
-  }
+  Stream<Duration> get positionStream => player.positionStream;
 
   @override
-  Stream<Duration?> get durationStream {
-    // TODO: Implement
-    // return player.durationStream;
-    throw UnimplementedError();
-  }
+  Stream<Duration?> get durationStream => player.durationStream;
 
   @override
   Future<void> dispose() async {
-    // TODO: Implement
-    // await recorder.dispose();
-    // await player.dispose();
-    throw UnimplementedError();
+    await recorder.dispose();
+    await player.dispose();
   }
 }

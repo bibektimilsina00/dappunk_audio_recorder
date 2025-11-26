@@ -19,31 +19,28 @@ class FilterDataSourceImpl implements FilterDataSource {
     required String outputPath,
     required String filterCommand,
   }) async {
-    // TODO: Implement FFmpeg filter application
-    // Example command: -i input.m4a -af "atempo=1.5,asetrate=44100*1.5,aresample=44100" output.m4a
-    // final command = '-i "$inputPath" -af "$filterCommand" "$outputPath"';
-    // final session = await FFmpegKit.execute(command);
-    // final returnCode = await session.getReturnCode();
-    //
-    // if (ReturnCode.isSuccess(returnCode)) {
-    //   return outputPath;
-    // } else {
-    //   final output = await session.getOutput();
-    //   throw Exception('FFmpeg failed: $output');
-    // }
-    throw UnimplementedError('Filter application not implemented yet');
+    // -y overwrites output file without asking
+    final command = '-y -i "$inputPath" -af "$filterCommand" "$outputPath"';
+    final session = await FFmpegKit.execute(command);
+    final returnCode = await session.getReturnCode();
+
+    if (ReturnCode.isSuccess(returnCode)) {
+      return outputPath;
+    } else {
+      final output = await session.getOutput();
+      final failStackTrace = await session.getFailStackTrace();
+      throw Exception('FFmpeg failed: $output\n$failStackTrace');
+    }
   }
 
   @override
   Future<bool> isFFmpegAvailable() async {
-    // TODO: Implement FFmpeg availability check
-    // try {
-    //   final session = await FFmpegKit.execute('-version');
-    //   final returnCode = await session.getReturnCode();
-    //   return ReturnCode.isSuccess(returnCode);
-    // } catch (e) {
-    //   return false;
-    // }
-    throw UnimplementedError('FFmpeg availability check not implemented yet');
+    try {
+      final session = await FFmpegKit.execute('-version');
+      final returnCode = await session.getReturnCode();
+      return ReturnCode.isSuccess(returnCode);
+    } catch (e) {
+      return false;
+    }
   }
 }
