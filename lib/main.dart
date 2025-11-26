@@ -6,7 +6,6 @@ import 'injection_container.dart' as di;
 import 'features/audio_recording/presentation/bloc/recording_bloc.dart';
 import 'features/audio_recording/presentation/bloc/recording_event.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await di.init();
@@ -26,7 +25,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp.router(
-        title: 'DappPunk',
+        title: 'DapPunk',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         routerConfig: router,
@@ -34,6 +33,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-
-
