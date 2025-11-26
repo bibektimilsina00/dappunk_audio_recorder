@@ -1,6 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:record/record.dart' as record;
-import 'package:waveform_flutter/waveform_flutter.dart';
+import 'package:waveform_flutter/waveform_flutter.dart' as waveform;
 import 'package:dappunk/injection_container.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/recording_bloc.dart';
@@ -16,6 +17,10 @@ class RecordingControls extends StatefulWidget {
 
 class _RecordingControlsState extends State<RecordingControls> {
   late final record.AudioRecorder _recorder;
+  Stream<waveform.Amplitude>? _amplitudeStream;
+  Timer? _pollingTimer;
+  final StreamController<waveform.Amplitude> _amplitudeController =
+      StreamController<waveform.Amplitude>.broadcast();
 
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -31,20 +36,61 @@ class _RecordingControlsState extends State<RecordingControls> {
   void initState() {
     super.initState();
     _recorder = di<record.AudioRecorder>();
+    _amplitudeStream = _amplitudeController.stream;
+  }
+
+  void _startPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(milliseconds: 100), (
+      _,
+    ) async {
+      if (await _recorder.isRecording()) {
+        final amp = await _recorder.getAmplitude();
+
+        final normalized = (1.0 + (amp.current / 60.0)).clamp(0.0, 1.0);
+        final current = normalized * 80.0;
+
+        _amplitudeController.add(
+          waveform.Amplitude(current: current, max: 80.0),
+        );
+      }
+    });
+  }
+
+  void _stopPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
   }
 
   @override
   void dispose() {
+    _pollingTimer?.cancel();
+    _amplitudeController.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<RecordingBloc, RecordingState>(
+    return BlocConsumer<RecordingBloc, RecordingState>(
+      listener: (context, state) {
+        if (state is RecordingInProgress && !state.isPaused) {
+          if (_pollingTimer == null || !_pollingTimer!.isActive) {
+            _startPolling();
+          }
+        } else {
+          _stopPolling();
+        }
+      },
       builder: (context, state) {
         final isRecording = state is RecordingInProgress;
         final isPaused = isRecording && (state).isPaused;
         final duration = isRecording ? (state).duration : Duration.zero;
+
+        if (isRecording &&
+            !isPaused &&
+            (_pollingTimer == null || !_pollingTimer!.isActive)) {
+          _startPolling();
+        }
 
         return Card(
           elevation: 4,
@@ -89,23 +135,24 @@ class _RecordingControlsState extends State<RecordingControls> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
-                          height: 80,
+                          height: 100,
                           width: MediaQuery.of(context).size.width - 48,
-                          child: AnimatedWaveList(
-                            stream: _recorder
-                                .onAmplitudeChanged(
-                                  const Duration(milliseconds: 100),
-                                )
-                                .map(
-                                  (a) =>
-                                      Amplitude(current: a.current, max: a.max),
+                          child: waveform.AnimatedWaveList(
+                            stream: _amplitudeStream!,
+                            barBuilder: (animation, amplitude) {
+                              return Align(
+                                alignment: Alignment.center,
+                                child: Container(
+                                  width: 4,
+                                  height: amplitude.current,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                  margin: const EdgeInsets.only(right: 2),
                                 ),
-                            barBuilder: (animation, amplitude) => WaveFormBar(
-                              animation: animation,
-                              amplitude: amplitude,
-                              color: Colors.red,
-                              maxHeight: 40,
-                            ),
+                              );
+                            },
                           ),
                         ),
                       ],

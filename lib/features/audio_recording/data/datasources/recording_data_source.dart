@@ -86,6 +86,7 @@ class RecordingDataSourceImpl implements RecordingDataSource {
   }
 
   // Provide access to the recorder for the UI to display waveforms
+  @override
   record.AudioRecorder get recorder => _recorder;
 
   // Playback operations
